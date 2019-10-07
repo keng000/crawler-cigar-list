@@ -7,7 +7,7 @@ from w3lib import html
 
 class ProductsSpider(CrawlSpider):
     name = "products"
-    allowed_domains = ["www.cubancigarwebsite.com"]
+    allowed_domains = ["cubancigarwebsite.com"]
     # start_urls = ['http://www.cubancigarwebsite.com/']
     # start_urls = ['https://www.cubancigarwebsite.com/brands/']
     start_urls = [
@@ -62,7 +62,7 @@ class ProductsSpider(CrawlSpider):
         "https://www.cubancigarwebsite.com/brand/siboney",
     ]
     # rules = (
-    #     Rule(LinkExtractor(allow=r'/brand/.*'), callback='parse_item', follow=True),
+    #     Rule(LinkExtractor(allow=r'\/brand\/.*'), callback='parse', follow=True),
     # )
 
     # def parse_start_url(serf, response):
