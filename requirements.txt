@@ -1,1 +1,4 @@
 scrapy
+pandas
+luigi
+boto3

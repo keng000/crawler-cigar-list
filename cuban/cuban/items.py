@@ -8,14 +8,11 @@
 import scrapy
 
 
-# class CubanItem(scrapy.Item):
-#     # define the fields for your item here like:
-#     # name = scrapy.Field()
-#     pass
-
-
 class CubanItem(scrapy.Item):
     brand = scrapy.Field()
     name = scrapy.Field()
+    factory = scrapy.Field()
+    release = scrapy.Field()
+    date = scrapy.Field()
     shape = scrapy.Field()
     img = scrapy.Field()

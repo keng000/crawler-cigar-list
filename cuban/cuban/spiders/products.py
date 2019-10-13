@@ -1,15 +1,20 @@
 # -*- coding: utf-8 -*-
-import scrapy
-from scrapy.linkextractors import LinkExtractor
-from scrapy.spiders import CrawlSpider, Rule
+import re
+from logging import getLogger
+from urllib.parse import urlparse
+
+from scrapy.exceptions import DropItem
+from scrapy.spiders import CrawlSpider
 from w3lib import html
+
+from cuban.base.utils.format import validate_date
+
+logger = getLogger(__name__)
 
 
 class ProductsSpider(CrawlSpider):
     name = "products"
     allowed_domains = ["cubancigarwebsite.com"]
-    # start_urls = ['http://www.cubancigarwebsite.com/']
-    # start_urls = ['https://www.cubancigarwebsite.com/brands/']
     start_urls = [
         "https://www.cubancigarwebsite.com/brand/cohiba",
         "https://www.cubancigarwebsite.com/brand/h-upmann",
@@ -61,20 +66,38 @@ class ProductsSpider(CrawlSpider):
         "https://www.cubancigarwebsite.com/brand/san-luis-rey",
         "https://www.cubancigarwebsite.com/brand/siboney",
     ]
-    # rules = (
-    #     Rule(LinkExtractor(allow=r'\/brand\/.*'), callback='parse', follow=True),
-    # )
-
-    # def parse_start_url(serf, response):
-    #     for url in response.css(".brandImage").css("a::attr('href')").extract():
-    #         yield response.follow(url, callable=serf.parse)
 
     def parse(self, response):
         for _i in response.css('div[itemtype="http://schema.org/Product"]'):
             item = {}
-            item["brand"] = _i.css('[itemtype="http://schema.org/Brand"]').css("::text").extract_first().strip()
-            item["name"] = _i.css(".cigarDetailsName::text").extract_first().strip()
-            item["shape"] = html.remove_tags(_i.css(".cigarDetailsCommonName").get()).strip()
-            path = _i.css("img::attr('src')").get()
-            item["img"] = f"https://www.cubancigarwebsite.com{path}"
+            try:
+                item["brand"] = _i.css('[itemtype="http://schema.org/Brand"]').css("::text").extract_first().strip()
+
+                item["name"] = _i.css(".cigarDetailsName::text").extract_first().strip()
+
+                item["shape"] = html.remove_tags(_i.css(".cigarDetailsCommonName").get()).strip()
+
+                # releaseはほとんどが欠損値。
+                release = _i.css(".cigarReleaseName")
+                if release:
+                    release = re.sub(r"\s{2,}", "", html.replace_tags(release.extract_first()).strip())
+                item["release"] = release
+
+                date = html.remove_tags(_i.css("[itemprop='ReleaseDate']")[-1].extract())
+                validate_date(date)
+                item["date"] = date
+
+                # factoryは稀に欠損する。
+                factory = _i.css(".cigarDetailsFactoryName")
+                if factory:
+                    factory = html.replace_tags(factory.extract_first()).strip()
+                item["factory"] = factory
+
+                url = urlparse(_i.css("img::attr('src')").get())
+                item["img"] = f"https://www.cubancigarwebsite.com{url.path}"
+            except Exception as e:
+                logger.error("Faild to scrape item. ")
+                logger.debug(_i)
+                logger.error(e)
+                raise DropItem from e
             yield item
