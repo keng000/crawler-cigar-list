@@ -2,3 +2,5 @@ scrapy
 pandas
 luigi
 boto3
+chardet
+requests
