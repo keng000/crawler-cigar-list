@@ -1,5 +1,9 @@
 import pandas as pd
 
+from logging import getLogger
+
+logger = getLogger(__name__)
+
 
 def has_diff(base: pd.DataFrame, concerned: pd.DataFrame) -> pd.Series:
     """
@@ -17,8 +21,12 @@ def has_diff(base: pd.DataFrame, concerned: pd.DataFrame) -> pd.Series:
         query = (
             f"brand == '{b}' & name == '{n}' & shape == '{s}' & release == '{r}' & factory == '{f}' & date == '{d}'"
         )
-        exists = len(base.query(query))
-        assert exists < 2, ValueError(f"Suspected duplicate keys: QUERY=> {query}")
+
+        result = base.query(query)
+        exists = len(result)
+        if exists > 1:
+            logger.debug(result.to_string())
+            raise ValueError(f"Suspected duplicate records: Key => {result.index.tolist()}, QUERY=> {query}")
         return exists == 1
 
     return concerned.apply(isin_df, axis=1)

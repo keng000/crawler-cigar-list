@@ -3,20 +3,21 @@ from pathlib import Path
 import pandas as pd
 
 import luigi
-from luigi.contrib import s3
+from luigi.contrib import s3, gcs
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 
 from cuban.cuban.spiders.products import ProductsSpider
 from cuban.base.utils.path_manager import PathManager
 from cuban.base.usecase import products
+from cuban.envs import S3_FURI, GCS_FURI
 
 
 class Crawl(luigi.Task):
     file_path = luigi.Parameter(default=PathManager.TMP / f"{d.now().strftime('%Y%m%d')}.csv")
 
     def output(self):
-        return luigi.LocalTarget(self.file_path)
+        return luigi.LocalTarget(str(self.file_path))
 
     def run(self):
         settings = get_project_settings()
@@ -29,10 +30,15 @@ class Crawl(luigi.Task):
         proc.start()
 
 
-class Upload(luigi.Task):
+class S3Upload(luigi.Task):
+    """
+    Requirement EnvVar: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+    References: https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html
+    """
+
     def output(self):
         file_path = f"{d.now().strftime('%Y%m%d')}.csv"
-        return s3.S3Target(f"s3://keng000-cigardb/daily/{file_path}")
+        return s3.S3Target(f"{S3_FURI}/{file_path}")
 
     def run(self):
         client = s3.S3Client()
@@ -42,8 +48,26 @@ class Upload(luigi.Task):
         return Crawl()
 
 
+class GCSUpload(luigi.Task):
+    """
+    Requirement EnvVar: GOOGLE_APPLICATION_CREDENTIALS
+    References:https://cloud.google.com/docs/authentication/production#auth-cloud-implicit-python
+    """
+
+    def output(self):
+        file_path = f"{d.now().strftime('%Y%m%d')}.csv"
+        return gcs.GCSTarget(f"{GCS_FURI}/{file_path}")
+
+    def run(self):
+        client = gcs.GCSClient()
+        client.put(Crawl().output().path, self.output().path)
+
+    def requires(self):
+        return Crawl()
+
+
 class Diff(luigi.Task):
-    # デフォルトは前日分のリストと比較
+    # default: previous date collection
     prev_file_path = luigi.Parameter(default=PathManager.TMP / f"{(d.now() - delta(days=1)).strftime('%Y%m%d')}.csv")
 
     def output(self):
@@ -51,9 +75,10 @@ class Diff(luigi.Task):
 
     def run(self):
         recent_file = Crawl().output()
-        prev_file = s3.S3Target(f"s3://keng000-cigardb/daily/{self.prev_file_path}")
+        # dependency
+        prev_file = s3.S3Target(f"{S3_FURI}/{self.prev_file_path}")
         if not prev_file.exists():
-            raise RuntimeError("File not exists in s3:", self.prev_file_path)
+            raise RuntimeError("File not exists in storage:", self.prev_file_path)
 
         with prev_file.open("w") as fp:
             prev_df = pd.read_csv(fp)
@@ -66,7 +91,7 @@ class Diff(luigi.Task):
         new_arrival = recent_df[is_new]
 
     def requires(self):
-        return [Crawl(), Upload()]
+        return [Crawl(), S3Upload()]
 
 
 if __name__ == "__main__":
