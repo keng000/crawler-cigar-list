@@ -68,22 +68,22 @@ class GCSUpload(luigi.Task):
 
 class Diff(luigi.Task):
     # default: previous date collection
-    prev_file_path = luigi.Parameter(default=PathManager.TMP / f"{(d.now() - delta(days=1)).strftime('%Y%m%d')}.csv")
+    prev_file_name = luigi.Parameter(default=f"{(d.now() - delta(days=1)).strftime('%Y%m%d')}.csv")
 
     def output(self):
-        pass
+        return luigi.LocalTarget("/tmp/hello")
 
     def run(self):
-        recent_file = Crawl().output()
+        recent_file = S3Upload().output()
         # dependency
-        prev_file = s3.S3Target(f"{S3_FURI}/{self.prev_file_path}")
+        prev_file = s3.S3Target(f"{S3_FURI}/{self.prev_file_name}")
         if not prev_file.exists():
-            raise RuntimeError("File not exists in storage:", self.prev_file_path)
+            raise RuntimeError("File not exists in storage:", self.prev_file_name)
 
-        with prev_file.open("w") as fp:
+        with prev_file.open("r") as fp:
             prev_df = pd.read_csv(fp)
 
-        with recent_file.open("w") as fp:
+        with recent_file.open("r") as fp:
             recent_df = pd.read_csv(fp)
 
         # The difference is the new record
@@ -91,8 +91,17 @@ class Diff(luigi.Task):
         new_arrival = recent_df[is_new]
 
     def requires(self):
-        return [Crawl(), S3Upload()]
+        return [S3Upload()]
 
 
 if __name__ == "__main__":
+    from logging import getLogger, INFO, Formatter, StreamHandler
+
+    fmt = Formatter("[%(levelname)s]\t%(asctime)s.%(msecs)dZ\t%(message)s")
+    logger = getLogger()
+    logger.setLevel(INFO)
+    handler = StreamHandler()
+    handler.setLevel(INFO)
+    handler.setFormatter(fmt)
+    logger.addHandler(handler)
     luigi.run()

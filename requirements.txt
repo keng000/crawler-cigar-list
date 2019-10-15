@@ -3,3 +3,4 @@ pandas
 luigi
 boto3
 requests
+environs
