@@ -18,9 +18,7 @@ def has_diff(base: pd.DataFrame, concerned: pd.DataFrame) -> pd.Series:
 
     def isin_df(x: pd.Series):
         b, n, s, r, f, d = x["brand"], x["name"], x["shape"], x["release"], x["factory"], x["date"]
-        query = (
-            f"brand == '{b}' & name == '{n}' & shape == '{s}' & release == '{r}' & factory == '{f}' & date == '{d}'"
-        )
+        query = f"brand == @b & name == @n & shape == @s & release == @r & factory == @f & date == @d"
 
         result = base.query(query)
         exists = len(result)
