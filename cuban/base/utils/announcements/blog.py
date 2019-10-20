@@ -33,15 +33,19 @@ class HatenaController(AnnouncementControllerInterface):
         return c.format(username, base64.b64encode(b_digest).decode(), base64.b64encode(b_nonce).decode(), created)
 
     def _create_blog_content(self, body: str, title: str) -> bytes:
+        """
+        Recent Content type: text/x-markdown
+        When to make it draft, rewrite it to `<app:draft>yes</app:draft>`
+        """
         template = """<?xml version="1.0" encoding="utf-8"?>
             <entry xmlns="http://www.w3.org/2005/Atom"
                    xmlns:app="http://www.w3.org/2007/app">
               <title>{0}</title>
               <author><name>name</name></author>
-              <content type="text/plain">{1}</content>
+              <content type="text/x-markdown">{1}</content>
               <updated>2013-09-05T00:00:00</updated>
               <app:control>
-                <app:draft>yes</app:draft>
+                <app>yes</app>
               </app:control>
             </entry>
             """

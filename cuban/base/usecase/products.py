@@ -2,6 +2,7 @@ import pandas as pd
 
 from logging import getLogger
 
+
 logger = getLogger(__name__)
 
 
@@ -16,15 +17,8 @@ def has_diff(base: pd.DataFrame, concerned: pd.DataFrame) -> pd.Series:
 
     """
 
-    def isin_df(x: pd.Series):
-        b, n, s, r, f, d = x["brand"], x["name"], x["shape"], x["release"], x["factory"], x["date"]
-        query = f"brand == @b & name == @n & shape == @s & release == @r & factory == @f & date == @d"
-
-        result = base.query(query)
-        exists = len(result)
-        if exists > 1:
-            logger.debug(result.to_string())
-            raise ValueError(f"Suspected duplicate records: Key => {result.index.tolist()}, QUERY=> {query}")
-        return exists == 1
-
-    return concerned.apply(isin_df, axis=1)
+    df = pd.concat([base, concerned])
+    df.reset_index(drop=True)
+    df_gpby = df.groupby(list(df.columns))
+    idx = [x[0] for x in df_gpby.groups.values() if len(x) == 1]
+    return concerned.loc[idx]

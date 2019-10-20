@@ -1,6 +1,7 @@
 from datetime import datetime as d, timedelta as delta
 from pathlib import Path
 import pandas as pd
+from pprint import pformat
 
 import luigi
 from luigi.contrib import s3, gcs
@@ -9,7 +10,8 @@ from scrapy.utils.project import get_project_settings
 
 from cuban.cuban.spiders.products import ProductsSpider
 from cuban.base.utils.path_manager import PathManager
-from cuban.base.usecase import products
+from cuban.base.utils.announcements import AnnouncementController, HatenaController
+from cuban.base.usecase import products, announcements
 from cuban.envs import S3_FURI, GCS_FURI
 
 
@@ -87,21 +89,28 @@ class Diff(luigi.Task):
             recent_df = pd.read_csv(fp)
 
         # The difference is the new record
-        is_new = ~products.has_diff(prev_df, recent_df)
-        new_arrival = recent_df[is_new]
+        new_arrivals = products.has_diff(prev_df, recent_df)
+        logger.info(f"Diff cnt: {len(new_arrivals)}")
+        logger.debug(new_arrivals.to_string())
+        content = announcements.format(new_arrivals)
+        logger.debug(pformat(content))
+
+        controller = AnnouncementController(HatenaController())
+        for title, body in content.items():
+            controller.post(title, body)
 
     def requires(self):
         return [S3Upload()]
 
 
 if __name__ == "__main__":
-    from logging import getLogger, INFO, Formatter, StreamHandler
+    from logging import getLogger, DEBUG, INFO, Formatter, StreamHandler
 
     fmt = Formatter("[%(levelname)s]\t%(asctime)s.%(msecs)dZ\t%(message)s")
     logger = getLogger()
-    logger.setLevel(INFO)
+    logger.setLevel(DEBUG)
     handler = StreamHandler()
-    handler.setLevel(INFO)
+    handler.setLevel(DEBUG)
     handler.setFormatter(fmt)
     logger.addHandler(handler)
     luigi.run()
