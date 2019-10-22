@@ -28,9 +28,6 @@ class HatenaController(AnnouncementControllerInterface):
         data = self._create_blog_content(title, body)
         self._post_request(data)
 
-    def format(self, series: pd.Series) -> Tuple[str, str]:
-        return "", ""
-
     def _wsse(self, username: str, api_key: str) -> str:
         created = datetime.datetime.now().isoformat() + "Z"
         b_nonce = hashlib.sha1(str(random.random()).encode()).digest()
@@ -42,20 +39,22 @@ class HatenaController(AnnouncementControllerInterface):
         """
         Recent Content type: text/x-markdown
         When to make it draft, rewrite it to `<app:draft>yes</app:draft>`
+        TODO: <category term={category} />
         """
         template = """<?xml version="1.0" encoding="utf-8"?>
         <entry xmlns="http://www.w3.org/2005/Atom"
                xmlns:app="http://www.w3.org/2007/app">
-          <title>{0}</title>
+          <title>{title}</title>
           <author><name>keng000</name></author>
-          <content type="text/x-markdown">{1}</content>
-          <updated>2013-09-05T00:00:00</updated>
+          <content type="text/x-markdown">{body}</content>
+          <updated>{updated}T01:00:00</updated>
           <app:control>
             <app:draft>yes</app:draft>
           </app:control>
         </entry>
         """
-        return template.format(title, escape(body)).encode()
+        date = datetime.datetime.today().strftime("%Y-%m-%d")
+        return template.format(title=title, body=escape(body), updated=date).encode()
 
     def _post_request(self, data: bytes):
         headers = {
@@ -72,13 +71,3 @@ class HatenaController(AnnouncementControllerInterface):
             logger.debug(f"message: {r.text}")
             logger.debug(f"data:{data.decode('utf8')}")
             r.raise_for_status()
-
-    def _list_entry(self):
-        _id = "26006613453800150"
-        headers = {
-            "X-WSSE": self._wsse(HATENA_USER_NAME, HATENA_API_KEY),
-            "Accept": "application/x.atom+xml, application/xml, text/xml, */*",
-        }
-        url = f"https://blog.hatena.ne.jp/{HATENA_USER_NAME}/{HATENA_BLOG_NAME}/atom/entry/{_id}"
-        ret = requests.get(url, headers=headers)
-        print(ret.content)
