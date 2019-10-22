@@ -75,12 +75,12 @@ jobs:
           command: |
             $(aws ecr get-login --no-include-email --region $AWS_REGION)
 
-            docker build -t $REPO_NAME:latest -f Dockerfile .
-            docker tag $REPO_NAME:latest $AWS_DOCKER_REPOSITORY/$REPO_NAME:latest
-            docker tag $REPO_NAME:latest $AWS_DOCKER_REPOSITORY/$REPO_NAME:${CIRCLE_SHA1}
+            docker build -t $IMAGE_NAME:latest -f Dockerfile .
+            docker tag $IMAGE_NAME:latest $AWS_DOCKER_REPOSITORY/$IMAGE_NAME:latest
+            docker tag $IMAGE_NAME:latest $AWS_DOCKER_REPOSITORY/$IMAGE_NAME:${CIRCLE_SHA1}
 
-            docker push $AWS_DOCKER_REPOSITORY/$REPO_NAME:latest
-            docker push $AWS_DOCKER_REPOSITORY/$REPO_NAME:${CIRCLE_SHA1}
+            docker push $AWS_DOCKER_REPOSITORY/$IMAGE_NAME:latest
+            docker push $AWS_DOCKER_REPOSITORY/$IMAGE_NAME:${CIRCLE_SHA1}
           environment:
             IMAGE_NAME: cigar-crawler/crawler
 
