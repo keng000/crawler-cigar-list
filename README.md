@@ -1,7 +1,7 @@
 
 # Description 
 
-Scrapy for cuban cigar website.
+[![CircleCI](https://circleci.com/gh/keng000/crawler-cigar-list/tree/master.svg?style=svg)](https://circleci.com/gh/keng000/crawler-cigar-list/tree/master)
 
 This is a application to get an updates of [Cuban Cigar Website](https://www.cubancigarwebsite.com/).
 
