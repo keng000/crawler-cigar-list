@@ -82,4 +82,3 @@ class HatenaController(AnnouncementControllerInterface):
         url = f"https://blog.hatena.ne.jp/{HATENA_USER_NAME}/{HATENA_BLOG_NAME}/atom/entry/{_id}"
         ret = requests.get(url, headers=headers)
         print(ret.content)
-

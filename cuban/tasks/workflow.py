@@ -6,10 +6,10 @@ import pandas as pd
 from luigi.contrib import s3, gcs
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
-from tabulate import tabulate
 
 from cuban.base.usecase import products
 from cuban.base.utils.announcements import AnnouncementController, HatenaController
+from cuban.base.utils.format import FormatterController, MarkdownFormatter
 from cuban.base.utils.path_manager import PathManager
 from cuban.cuban.spiders.products import ProductsSpider
 from cuban.envs import S3_FURI, GCS_FURI
@@ -92,11 +92,12 @@ class Diff(luigi.Task):
         new_arrivals = products.has_diff(prev_df, recent_df)
         logger.info(f"Diff cnt: {len(new_arrivals)}")
         logger.debug(new_arrivals.to_string())
+
         controller = AnnouncementController(HatenaController())
+        formatter = FormatterController(MarkdownFormatter())
         for _, item in new_arrivals.iterrows():
-            table = tabulate(item.to_frame(), headers=("", ""), tablefmt="pipe")
-            title = f'{item["brand"]} {item["name"]}'
-            controller.post(title, table)
+            title, body = formatter.format(item)
+            controller.post(title, body)
 
     def requires(self):
         return [S3Upload()]

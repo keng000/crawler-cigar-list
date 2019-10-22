@@ -7,7 +7,7 @@ class AnnouncementControllerInterface(ABC):
         pass
 
 
-class AnnouncementController(ABC):
+class AnnouncementController:
     def __init__(self, impl: AnnouncementControllerInterface):
         if not isinstance(impl, AnnouncementControllerInterface):
             raise RuntimeError("Interface Error")
