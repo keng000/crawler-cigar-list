@@ -1,0 +1,99 @@
+version: 2.1
+
+commands:
+  install_aws_cli:
+    steps:
+      - run:
+          name: Install aws cli
+          command: |
+            sudo pip install awscli
+
+  setup_dependencies:
+    description: basic project setup
+    steps:
+      - restore_cache:
+          keys:
+            - v1-{{ checksum "setup.py" }}
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv _venv
+            . _venv/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+      - save_cache:
+          paths:
+            - ./_venv/
+          key: v1-{{ checksum "setup.py" }}
+
+  setup_environment_variable:
+    description: Environment settings
+    steps: 
+      - run:
+          name: Environment settings
+          command: |
+            if [ $CIRCLE_BRANCH == "master" ]; then
+              echo "export AWS_DEFAULT_REGION=ap-northeast-1"                                            >> $BASH_ENV
+              echo "export AWS_REGION=ap-northeast-1"                                                    >> $BASH_ENV
+              echo "export AWS_DOCKER_REPOSITORY=${AWS_ACCOUNT_ID}.dkr.ecr.ap-northeast-1.amazonaws.com" >> $BASH_ENV
+            else
+              echo "export AWS_DEFAULT_REGION=ap-northeast-2"                                            >> $BASH_ENV
+              echo "export AWS_REGION=ap-northeast-2"                                                    >> $BASH_ENV
+              echo "export AWS_DOCKER_REPOSITORY=${AWS_ACCOUNT_ID}.dkr.ecr.ap-northeast-2.amazonaws.com" >> $BASH_ENV
+            fi
+
+jobs:
+  codestyle:
+    docker:
+      - image: circleci/python:3.6.1
+
+    working_directory: ~/crawler-cigar-list
+
+    steps:
+      - checkout
+      - setup_environment_variable
+      - setup_dependencies
+      - run:
+          name: run codestyle tests
+          command: |
+            . _venv/bin/activate
+            make format-check
+
+  buildimage:
+    docker:
+      - image: circleci/python:3.6.1
+    working_directory: ~/build/crawler-cigar-list
+    steps:
+      - checkout
+      - setup_dependencies
+      - setup_environment_variable
+      - install_aws_cli
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run: 
+          name: build
+          command: |
+            $(aws ecr get-login --no-include-email --region $AWS_REGION)
+
+            docker build -t $REPO_NAME:latest -f Dockerfile .
+            docker tag $REPO_NAME:latest $AWS_DOCKER_REPOSITORY/$REPO_NAME:latest
+            docker tag $REPO_NAME:latest $AWS_DOCKER_REPOSITORY/$REPO_NAME:${CIRCLE_SHA1}
+
+            docker push $AWS_DOCKER_REPOSITORY/$REPO_NAME:latest
+            docker push $AWS_DOCKER_REPOSITORY/$REPO_NAME:${CIRCLE_SHA1}
+          environment:
+            IMAGE_NAME: cigar-crawler
+
+workflows:
+  version: 2
+  builds_test:
+    jobs:
+      - codestyle
+      - buildimage:
+          requires:
+            - codestyle
+          filters:
+            branches:
+              only: 
+                - master
+                - develop
