@@ -69,7 +69,7 @@ jobs:
       - setup_environment_variable
       - install_aws_cli
       - setup_remote_docker:
-          docker_layer_caching: true
+          docker_layer_caching: false
       - run: 
           name: build
           command: |
@@ -82,7 +82,7 @@ jobs:
             docker push $AWS_DOCKER_REPOSITORY/$REPO_NAME:latest
             docker push $AWS_DOCKER_REPOSITORY/$REPO_NAME:${CIRCLE_SHA1}
           environment:
-            IMAGE_NAME: cigar-crawler
+            IMAGE_NAME: cigar-crawler/crawler
 
 workflows:
   version: 2

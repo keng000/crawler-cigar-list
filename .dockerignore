@@ -1,1 +1,4 @@
 cuban/tmp
+environments/
+.git/
+.circleci/
