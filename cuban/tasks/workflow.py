@@ -1,17 +1,17 @@
 from datetime import datetime as d, timedelta as delta
 from pathlib import Path
-import pandas as pd
-from pprint import pformat
 
 import luigi
+import pandas as pd
 from luigi.contrib import s3, gcs
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 
-from cuban.cuban.spiders.products import ProductsSpider
-from cuban.base.utils.path_manager import PathManager
+from cuban.base.usecase import products
 from cuban.base.utils.announcements import AnnouncementController, HatenaController
-from cuban.base.usecase import products, announcements
+from cuban.base.utils.format import FormatterController, MarkdownFormatter
+from cuban.base.utils.path_manager import PathManager
+from cuban.cuban.spiders.products import ProductsSpider
 from cuban.envs import S3_FURI, GCS_FURI
 
 
@@ -92,11 +92,11 @@ class Diff(luigi.Task):
         new_arrivals = products.has_diff(prev_df, recent_df)
         logger.info(f"Diff cnt: {len(new_arrivals)}")
         logger.debug(new_arrivals.to_string())
-        content = announcements.format(new_arrivals)
-        logger.debug(pformat(content))
 
         controller = AnnouncementController(HatenaController())
-        for title, body in content.items():
+        formatter = FormatterController(MarkdownFormatter())
+        for _, item in new_arrivals.iterrows():
+            title, body = formatter.format(item)
             controller.post(title, body)
 
     def requires(self):
@@ -110,7 +110,7 @@ if __name__ == "__main__":
     logger = getLogger()
     logger.setLevel(DEBUG)
     handler = StreamHandler()
-    handler.setLevel(DEBUG)
+    handler.setLevel(INFO)
     handler.setFormatter(fmt)
     logger.addHandler(handler)
     luigi.run()

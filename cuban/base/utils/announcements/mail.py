@@ -1,6 +1,6 @@
-from .interface import AnnouncementControllerInterface
-
 from logging import getLogger
+
+from .interface import AnnouncementControllerInterface
 
 logger = getLogger(__name__)
 

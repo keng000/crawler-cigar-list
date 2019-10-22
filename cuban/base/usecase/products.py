@@ -1,12 +1,11 @@
-import pandas as pd
-
 from logging import getLogger
 
+import pandas as pd
 
 logger = getLogger(__name__)
 
 
-def has_diff(base: pd.DataFrame, concerned: pd.DataFrame) -> pd.Series:
+def has_diff(base: pd.DataFrame, concerned: pd.DataFrame) -> pd.DataFrame:
     """
     Compare pandas DataFrame and check the difference `right` from `left`
     Args:
