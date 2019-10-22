@@ -55,6 +55,7 @@ Scrapy==1.7.3
 service-identity==18.1.0
 six==1.12.0
 soupsieve==1.9.4
+tabulate==0.8.5
 tornado==5.1.1
 transaction==2.4.0
 Twisted==19.7.0
