@@ -1,4 +1,4 @@
 provider "aws" {
   version = "~> 2.5"
-  region  = "ap-northeast-2"
+  region  = lookup(var.region, terraform.workspace)
 }
