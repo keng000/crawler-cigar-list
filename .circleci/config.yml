@@ -62,9 +62,8 @@ jobs:
           name: run tests with coverage
           command: |
             . _venv/bin/activate
-            make test
-            mdkir /tmp/coverage
-            mv htmlcov /tmp/coverage
+            pytest --cov=cuban tests/
+            coverage html --omit=_venv/* -d tmp/coverage
       - store_artifacts:
           path: /tmp/coverage
 
