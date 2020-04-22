@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from .interface import FormatterController
-from .markdown import MarkdownFormatter
+from .interface import FormatterController  # noqa
+from .markdown import MarkdownFormatter  # noqa
 
 
 def validate_date(date_text, format="%Y-%m-%d"):

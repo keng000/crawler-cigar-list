@@ -11,7 +11,6 @@ class FormatterInterface(ABC):
         Returns:
             Tuple[str, str]: title and content
         """
-        pass
 
 
 class FormatterController:
