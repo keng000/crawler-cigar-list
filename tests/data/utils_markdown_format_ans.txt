@@ -1,0 +1,9 @@
+|         |                                                                                                                                                             |
+|:--------|:------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| brand   | H. Upmann                                                                                                                                                   |
+| name    | Connoisseur No.1                                                                                                                                            |
+| shape   | Corona Extra                                                                                                                                                |
+| release | nan                                                                                                                                                         |
+| date    | 1960-01-01                                                                                                                                                  |
+| factory | Hermosos No.4                                                                                                                                               |
+| img     | [https://www.cubancigarwebsite.com/img/cigars/h-upmann-connoisseur-no1-jpg:image=https://www.cubancigarwebsite.com/img/cigars/h-upmann-connoisseur-no1-jpg] |

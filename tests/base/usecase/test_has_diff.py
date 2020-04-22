@@ -4,12 +4,13 @@ import pandas as pd
 import pandas.testing
 
 from cuban.base.usecase.products import has_diff
+from cuban.base.utils.path_manager import PathManager
 
 
 def test_has_diff():
-    prev_file = Path(__file__).resolve().parent / "data" / "20200325.csv"
-    recent_file = Path(__file__).resolve().parent / "data" / "20200326.csv"
-    ans_file = Path(__file__).resolve().parent / "data" / "ans.csv"
+    prev_file = PathManager.TEST_ROOT / "data" / "20200325.csv"
+    recent_file = PathManager.TEST_ROOT / "data" / "20200326.csv"
+    ans_file = PathManager.TEST_ROOT / "data" / "usecase_products_has_diff_ans.csv"
 
     with prev_file.open("r") as fp:
         prev_df = pd.read_csv(fp, index_col=False)
