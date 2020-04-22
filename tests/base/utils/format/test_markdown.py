@@ -1,4 +1,5 @@
 import pandas as pd
+
 from cuban.base.utils.format.markdown import MarkdownFormatter
 from cuban.base.utils.path_manager import PathManager
 
