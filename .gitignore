@@ -7,3 +7,6 @@ venv/
 *.egg-info/
 __pycache__/
 .terraform/
+htmlcov
+.coverage
+.python-version
