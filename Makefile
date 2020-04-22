@@ -4,7 +4,8 @@ test:  ## run all tests with coverage
 	pytest --cov=cuban tests/ && coverage html --omit=venv/*
 
 format:  ## run formatter
-	isort -rc cuban tests
+	autoflake --in-place --remove-all-unused-imports --remove-unused-variables --recursive cuban tests && \
+	isort -rc cuban tests && \
 	black -l 119 cuban tests
 
 format-check:
