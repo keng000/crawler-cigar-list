@@ -1,3 +1,3 @@
-from .blog import HatenaController
-from .interface import AnnouncementController
-from .mail import MailController
+from .blog import HatenaController  # noqa
+from .interface import AnnouncementController  # noqa
+from .mail import MailController  # noqa

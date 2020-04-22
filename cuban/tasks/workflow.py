@@ -1,9 +1,10 @@
-from datetime import datetime as d, timedelta as delta
+from datetime import datetime as d
+from datetime import timedelta as delta
 from pathlib import Path
 
 import luigi
 import pandas as pd
-from luigi.contrib import s3, gcs
+from luigi.contrib import gcs, s3
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 
@@ -12,7 +13,7 @@ from cuban.base.utils.announcements import AnnouncementController, HatenaControl
 from cuban.base.utils.format import FormatterController, MarkdownFormatter
 from cuban.base.utils.path_manager import PathManager
 from cuban.cuban.spiders.products import ProductsSpider
-from cuban.envs import S3_FURI, GCS_FURI
+from cuban.envs import GCS_FURI, S3_FURI
 
 
 class Crawl(luigi.Task):

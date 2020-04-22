@@ -43,7 +43,7 @@ commands:
             fi
 
 jobs:
-  codestyle:
+  stats:
     docker:
       - image: circleci/python:3.6.1
 
@@ -58,6 +58,14 @@ jobs:
           command: |
             . _venv/bin/activate
             make format-check
+      - run:
+          name: run tests with coverage
+          command: |
+            . _venv/bin/activate
+            S3_FURI="" pytest --cov=cuban tests/
+            coverage html --omit=_venv/* -d /tmp/coverage
+      - store_artifacts:
+          path: /tmp/coverage
 
   buildimage:
     docker:
@@ -88,10 +96,10 @@ workflows:
   version: 2
   builds_test:
     jobs:
-      - codestyle
+      - stats
       - buildimage:
           requires:
-            - codestyle
+            - stats
           filters:
             branches:
               only: 
