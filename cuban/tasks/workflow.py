@@ -102,7 +102,7 @@ class Diff(luigi.Task):
                 if d.now().year - release.year > 1:
                     # announce items only it release in a past year. so skip older items here.
                     continue
-                    
+
             except Exception:
                 logger.info(f'failed parse date: `{item["date"]}`')
 
