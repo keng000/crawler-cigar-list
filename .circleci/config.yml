@@ -63,7 +63,7 @@ jobs:
           command: |
             . _venv/bin/activate
             S3_FURI="" pytest --cov=cuban tests/
-            coverage html --omit=_venv/* -d tmp/coverage
+            coverage html --omit=_venv/* -d /tmp/coverage
       - store_artifacts:
           path: /tmp/coverage
 
