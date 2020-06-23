@@ -6,7 +6,9 @@ commands:
       - run:
           name: Install aws cli
           command: |
-            sudo pip install awscli
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
 
   setup_dependencies:
     description: basic project setup
@@ -91,6 +93,13 @@ jobs:
             docker push $AWS_DOCKER_REPOSITORY/$IMAGE_NAME:${CIRCLE_SHA1}
           environment:
             IMAGE_NAME: cigar-crawler/crawler
+  release:
+    docker:
+      - image: circleci/python:3.6.1
+    working_directory: ~/build/crawler-cigar-list
+    steps:
+      - run: |
+          echo $CIRCLE_TAG
 
 workflows:
   version: 2
@@ -105,3 +114,9 @@ workflows:
               only: 
                 - master
                 - develop
+      - release:
+          requires:
+            - stats
+          filters:
+            tags:
+              only: /^v.*/
