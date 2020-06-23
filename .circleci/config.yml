@@ -83,7 +83,7 @@ jobs:
       - run: 
           name: build
           command: |
-            $(aws ecr get-login --no-include-email --region $AWS_REGION)
+            $(aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_DOCKER_REPOSITORY)
 
             docker build -t $IMAGE_NAME:latest -f Dockerfile .
             docker tag $IMAGE_NAME:latest $AWS_DOCKER_REPOSITORY/$IMAGE_NAME:latest
@@ -120,3 +120,5 @@ workflows:
           filters:
             tags:
               only: /^v.*/
+            branches:
+              ignore: /.*/
